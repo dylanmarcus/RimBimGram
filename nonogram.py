@@ -1,4 +1,5 @@
 from graphics import *
+import numpy as np
 
 
 class Board:
@@ -29,10 +30,23 @@ class Board:
 
 
 	def click(self, WIN):
+		playing = True
 		click = WIN.getMouse()
-		# figure out where the fuck the shit does the stuff
-		# change the fucking user board
-		# draw the god damned new piece of shit cell
+		for row in range(self.size):
+			for column in range(self.size):
+				p1, p2 = self.getPoints(row, column)
+				if click.x > p1.x and click.x < p2.x and click.y > p1.y and click.y < p2.y:
+					if self.cells[row][column].state == 'blank':
+						self.cells[row][column].state = 'filled'
+						self.userBoard[row][column] = 1
+					elif self.cells[row][column].state == 'filled':
+						self.cells[row][column].state = 'blank'
+						self.userBoard[row][column] = 0
+					self.cells[row][column].drawCell(p1, p2, WIN)
+				if click.x < 20 and click.y < 20:
+					playing = False
+		return playing
+
 
 
 
@@ -63,10 +77,14 @@ class Cell:
 
 
 def main():
-	board = Board()
+	board = Board([1])
 	windowSize = board.size * board.cellSize + board.offset
 	WIN = GraphWin("Game", windowSize, windowSize)
 	board.drawBoard(WIN)
+	playing = True
+	while playing:
+		playing = board.click(WIN)
+		print np.matrix(board.userBoard)
 	WIN.getMouse()
 	WIN.close()
 
