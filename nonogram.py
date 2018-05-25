@@ -65,8 +65,8 @@ class Board:
         string = str(self.userBoard)
         file.write(string)
         self.rowSequence(WIN)
-        boardArray = self.boardToString()
-        self.colSequence(boardArray, WIN)
+        #boardArray = self.boardToString()
+        #self.colSequence(boardArray, WIN)
 
 
     # def boardToString(self):
