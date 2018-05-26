@@ -1,5 +1,6 @@
 from graphics import *
 import numpy as np
+import math as math
 
 
 class Board:
@@ -32,12 +33,21 @@ class Board:
                 p1, p2 = self.getPoints(row, column)
                 self.cells[row][column].drawCell(p1, p2, WIN)
 
+    def getIndex(self, click):
+
+        index = math.floor((click.x - self.offset) / self.cellSize)
+        index = index + ((math.floor((click.y - self.offset) / self.cellSize) * self.size))
+        return index
+
     def click(self, WIN):
         playing = True
         click = WIN.getMouse()
         for row in range(self.size):
             for column in range(self.size):
                 p1, p2 = self.getPoints(row, column)
+                index = self.getIndex(click)
+
+                print(index)
                 if click.x > p1.x and click.x < p2.x and click.y > p1.y and click.y < p2.y:
                     if self.cells[row][column].state == 'blank':
                         self.cells[row][column].state = 'filled'
