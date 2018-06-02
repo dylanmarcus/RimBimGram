@@ -12,7 +12,8 @@ class Board:
         self.solutionBoard = solution
         self.userBoard = [[0 for i in range(self.size)] for i in range(self.size)]
         self.button = Rectangle(Point(0, 0), Point(self.cellSize * 2, self.cellSize))
-        self.buttonText = Text(Point(self.cellSize / 10, self.cellSize / 10), '')
+        self.buttonText = Text(self.button.getCenter(), '')
+
 
     def getPoints(self, row, column):
         p1 = Point(
@@ -24,9 +25,8 @@ class Board:
         return p1, p2
 
     def drawBoard(self, WIN):
-        button = Rectangle(Point(0, 0), Point(20, 20))
-        button.setFill('blue')
-        button.draw(WIN)
+        button = Rectangle(Point(0, 0), Point(self.cellSize*2, self.cellSize))
+
         for row in range(self.size):
             for column in range(self.size):
                 p1, p2 = self.getPoints(row, column)
@@ -46,34 +46,74 @@ class Board:
                 p1, p2 = self.getPoints(row, column)
                 index = self.getIndex(click)
 
-                print(index)
                 if click.x > p1.x and click.x < p2.x and click.y > p1.y and click.y < p2.y:
                     if self.cells[row][column].state == 'blank':
                         self.cells[row][column].state = 'filled'
                         self.userBoard[row][column] = 1
+
+
                     elif self.cells[row][column].state == 'filled':
                         self.cells[row][column].state = 'blank'
                         self.userBoard[row][column] = 0
                     self.cells[row][column].drawCell(p1, p2, WIN)
 
-                if click.x < 20 and click.y < 20:
+                    if self.userBoard == self.solutionBoard:
+                        playing = False
+
+                        winner = Rectangle(Point(0, 0), Point(WIN.getHeight(), WIN.getWidth()))
+                        winner.setFill('white')
+                        winnerText = Text(winner.getCenter(), 'WINNER!')
+                        winner.draw(WIN)
+                        winnerText.draw(WIN)
+                p2 = self.button.getP2()
+                buttonX = p2.x
+                buttonY = p2.y
+
+                if click.x < buttonX and click.y < buttonY:
                     playing = False
         return playing
 
     def creationMode(self, WIN):
+
         self.button.setFill('blue')
         self.buttonText.setText('save')
+        self.buttonText.setTextColor("white")
+        self.button.draw(WIN)
         self.buttonText.draw(WIN)
 
         creating = True
         while creating:
             creating = self.click(WIN)
-            print np.matrix(self.userBoard)
-        # file = open('solution.txt', 'w')
-        # string = str(self.userBoard)
-        # file.write(string)
+
         self.rowSequence(WIN)
         self.columnSequence(WIN)
+        print(self.userBoard)
+        self.playMode(self.userBoard, WIN)
+
+    def playMode(self, solution, WIN):
+        print(solution)
+        self.button.undraw()
+        self.buttonText.undraw()
+        self.solutionBoard = solution
+        self.button.setFill('red')
+        self.buttonText.setText('quit')
+        self.buttonText.setTextColor("white")
+        self.button.draw(WIN)
+        self.buttonText.draw(WIN)
+
+        for row in range(self.size):
+            for column in range(self.size):
+                self.cells[row][column].state = 'blank'
+
+
+        playing = True
+
+        board = Board()
+        board.drawBoard(WIN)
+        self.userBoard = [[0 for i in range(self.size)] for i in range(self.size)]
+
+        while playing:
+            playing = self.click(WIN)
 
     def rowSequence(self, WIN):
         rowCount = 0
@@ -84,12 +124,12 @@ class Board:
             sequence = self.sequence(row)
 
             anchor = self.offset / 2
-            rowText = Text(Point(anchor + (self.offset/(len(sequence)+2)), self.cellSize * rowCount + (90 + self.cellSize)), sequence)
+            rowText = Text(
+                Point(anchor + (self.offset / (len(sequence) + 2)), self.cellSize * rowCount + (90 + self.cellSize)),
+                sequence)
             rowText.setSize(10)
             rowText.draw(WIN)
             rowCount += 1
-            #print sequence
-        # self.printRowSequence(sequence)
 
     def columnSequence(self, WIN):
         colCount = 0
@@ -98,16 +138,13 @@ class Board:
             for c in range(self.size):
                 column.append(self.userBoard[c][r])
             sequence = self.sequence(column)
-            print sequence
 
             anchor = self.offset - (len(sequence) * self.cellSize) + (self.cellSize / 2)
             for idx in range(len(sequence)):
-                rowText = Text(Point(self.cellSize * colCount + (90 + self.cellSize), anchor + 20*idx), sequence[idx])
+                rowText = Text(Point(self.cellSize * colCount + (90 + self.cellSize), anchor + 20 * idx), sequence[idx])
                 rowText.setSize(10)
                 rowText.draw(WIN)
             colCount += 1
-
-        # self.printColumnSequence(sequence)
 
     def sequence(self, a):
         sequence = []
@@ -129,11 +166,6 @@ class Board:
             sequence.append(0)
         return sequence
 
-    def playMode(self, solution, WIN):
-        self.solutionBoard = solution
-        self.button.setFill('red')
-        self.buttonText.setText('quit')
-        self.buttonText.draw(WIN)
 
     def boardToString(self):
         string = str(self.userBoard)
