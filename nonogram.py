@@ -1,6 +1,7 @@
 from graphics import *
 import numpy as np
 import math as math
+import os
 
 
 class Board:
@@ -85,13 +86,15 @@ class Board:
         while creating:
             creating = self.click(WIN)
 
-        self.rowSequence(WIN)
-        self.columnSequence(WIN)
-        print(self.userBoard)
+
+        #print(self.userBoard)
         self.playMode(self.userBoard, WIN)
 
     def playMode(self, solution, WIN):
-        print(solution)
+        #self.userBoard = solution
+        self.rowSequence(WIN)
+        self.columnSequence(WIN)
+
         self.button.undraw()
         self.buttonText.undraw()
         self.solutionBoard = solution
@@ -195,12 +198,143 @@ class Cell:
         cell.draw(WIN)
 
 
+def menu():
+    WIN = GraphWin("Menu", 300, 300)
+    width = 150
+    height = 30
+    buttonX1 = WIN.getWidth()/2 - (width / 2)
+    buttonY1 = WIN.getHeight()/2
+    buttonX2 = WIN.getWidth()/2 - (width / 2)
+    buttonY2 = WIN.getHeight()/2 + height + 10
+
+    playBoard = Rectangle(Point(buttonX1, buttonY1), Point(buttonX1 + width, buttonY1 + height))
+    playBoard.setFill('blue')
+    playBoardText = Text(Point(buttonX1 + (width / 2), buttonY1 + (height / 2)), 'PLAY')
+    playBoardText.setTextColor('white')
+    playBoard.draw(WIN)
+    playBoardText.draw(WIN)
+
+
+    createBoard = Rectangle(Point(buttonX2, buttonY2), Point(buttonX2 + width, buttonY2 + height))
+    createBoard.setFill('blue')
+    createBoardText = Text(Point(buttonX2 + (width/2), buttonY2 + (height/2)), 'NEW BOARD')
+    createBoardText.setTextColor('white')
+    createBoard.draw(WIN)
+    createBoardText.draw(WIN)
+
+    string = ''
+    while string == '':
+        click = WIN.getMouse()
+
+        if buttonX1 < click.x < buttonX1 + width:
+            if buttonY1 < click.y < buttonY1 + height:
+                createBoard.undraw()
+                createBoardText.undraw()
+                playBoard.undraw()
+                playBoardText.undraw()
+                return 'play', WIN
+
+        if buttonX2 < click.x < buttonX2 + width:
+            if buttonY2 < click.y < buttonY2 + height:
+                createBoard.undraw()
+                createBoardText.undraw()
+                playBoard.undraw()
+                playBoardText.undraw()
+                return 'create', WIN
+
+def selectBoard(WIN):
+    all_files = os.listdir("sequences/")
+
+    width = 150
+    height = 30
+
+    for idx in range(len(all_files)):
+        buttonX = WIN.getWidth() / 2 - (width / 2)
+        buttonY = WIN.getHeight() / 3 + (height * idx) + (15 * idx)
+        chooseBoard = Rectangle(Point(buttonX, buttonY), Point(buttonX + width, buttonY + height))
+        chooseBoard.setFill('blue')
+        chooseBoardText = Text(Point(buttonX + (width / 2), buttonY + (height / 2)), all_files[idx])
+        chooseBoardText.setTextColor('white')
+        chooseBoard.draw(WIN)
+        chooseBoardText.draw(WIN)
+
+    string = ''
+    while string == '':
+        click = WIN.getMouse()
+        for idx in range(len(all_files)):
+            buttonX = WIN.getWidth() / 2 - (width / 2)
+            buttonY = WIN.getHeight() / 3 + (height * idx) + (15 * idx)
+
+            if (buttonX < click.x < buttonX + width):
+                if (buttonY < click.y < buttonY + height):
+                    index = idx
+                    string = 'CHRIST'
+
+    with open(os.path.join('sequences/', all_files[index]), 'rt') as fd:
+        sequence = fd.readline()
+
+    clear = Rectangle(Point(0, 0), Point(WIN.getHeight(), WIN.getWidth()))
+    clear.setFill('white')
+    clear.draw(WIN)
+
+    seq = []
+    for idx in sequence:
+        if idx == '1':
+            seq.append(1)
+        elif idx == '0':
+            seq.append(0)
+
+    size = int(len(seq)/len(seq))
+    # CHANGE THE HARD CODING LATER!
+
+
+    newSeq = [[0 for i in range(10)] for i in range(10)]
+    print(len(newSeq))
+    print()
+    print()
+
+    list = []
+    rowCount = 0
+    for idx in range(len(seq)-1):
+
+        list.append(seq[idx])
+        if idx > 1 and (idx+1) % 10 == 0:
+            print(list)
+
+            for idx2 in range(len(list)):
+                newSeq[rowCount][idx2] = list[idx2]
+
+            rowCount += 1
+            list.clear()
+
+    print(newSeq)
+    print(len(newSeq[0]))
+
+    return newSeq
+
+
 def main():
-    board = Board()
-    windowSize = board.size * board.cellSize + board.offset
-    WIN = GraphWin("Game", windowSize, windowSize)
-    board.drawBoard(WIN)
-    board.creationMode(WIN)
+    string, WIN = menu()
+
+    if string == 'play':
+        seq = selectBoard(WIN)
+        #print(seq)
+        board = Board(seq)
+        board.solutionBoard = seq
+        board.userBoard = seq
+        board.playMode(seq, WIN)
+
+    #print(seq)
+
+    #if string == 'create':
+    #    createboard()
+    if string == 'create':
+        board = Board()
+        windowSize = board.size * board.cellSize + board.offset
+        WIN = GraphWin("Game", windowSize, windowSize)
+
+        board.drawBoard(WIN)
+        board.creationMode(WIN)
     WIN.getMouse()
     WIN.close()
 
