@@ -9,7 +9,7 @@ class Board:
         self.size = size
         self.cellSize = cellSize
         self.offset = offset
-        self.cells = [[Cell(r, c) for r in range(self.size)] for c in range(self.size)]
+        self.cells = [[Cell(r, c, cellSize) for r in range(self.size)] for c in range(self.size)]
         self.solutionBoard = solution
         self.userBoard = [[0 for i in range(self.size)] for i in range(self.size)]
         self.button = Rectangle(Point(0, 0), Point(self.cellSize * 2, self.cellSize))
@@ -99,6 +99,10 @@ class Board:
     def click(self, WIN):
         playing = True
         click = WIN.getMouse()
+        if WIN.checkKey() == 'x':
+            crossOut = True
+        else:
+            crossOut = False
         for row in range(self.size):
             for column in range(self.size):
                 p1, p2 = self.getPoints(row, column)
@@ -106,13 +110,21 @@ class Board:
 
                 if click.x > p1.x and click.x < p2.x and click.y > p1.y and click.y < p2.y:
                     if self.cells[row][column].state == 'blank':
-                        self.cells[row][column].state = 'filled'
-                        self.userBoard[row][column] = 1
+                        if crossOut:
+                            self.cells[row][column].state = 'crossedOut'
+                        else:
+                            self.cells[row][column].state = 'filled'
+                            self.userBoard[row][column] = 1
 
                     elif self.cells[row][column].state == 'filled':
                         self.cells[row][column].state = 'blank'
                         self.userBoard[row][column] = 0
+
+                    elif self.cells[row][column].state == 'crossedOut':
+                        self.cells[row][column].state = 'blank'
+
                     self.cells[row][column].drawCell(p1, p2, WIN)
+
 
                     if len(self.solutionBoard) != 0:
                         if self.countCol(column):
@@ -158,7 +170,7 @@ class Board:
             creating = self.click(WIN)
 
 
-        #print(self.userBoard)
+        # print(self.userBoard)
         self.playMode(self.userBoard, WIN)
 
     def playMode(self, solution, WIN):
@@ -285,21 +297,29 @@ class Board:
                     self.cells[x][y].drawCell(p1, p2, WIN)
 
 class Cell:
-    def __init__(self, row, column, state='blank'):
+    def __init__(self, row, column, size=20, state='blank'):
         self.state = state
         self.row = row
         self.column = column
+        self.size = size
 
     def drawCell(self, p1, p2, WIN):
         cell = Rectangle(p1, p2)
+        textPoint = Point(p1.x + self.size/2, p1.y + self.size/2)
+        crossOutText = Text(textPoint, '')
+        crossOutText.setSize(self.size)
         if self.state == 'filled':
             cell.setFill('green')
+            crossOutText.setText('')
         elif self.state == 'crossedOut':
-            cell.setFill('red')
+            crossOutText.setText('X')
         else:
             cell.setFill('white')
+            crossOutText.setText('')
 
+        crossOutText.draw(WIN)
         cell.draw(WIN)
+
 
 
 def menu(WIN):
@@ -517,7 +537,7 @@ def createMenu(WIN):
     home = Rectangle(Point(0, 0), Point(40, 20))
     home.setFill('green')
     home.setOutline('green')
-    homeText = Text(Point(20, 10), "HOME")
+    homeText = Text(Point(20, 10), 'HOME')
     homeText.setSize(10)
     homeText.setTextColor('white')
     home.draw(WIN)
@@ -566,7 +586,7 @@ def createMenu(WIN):
 
 
 def main():
-    WIN = GraphWin("Menu", 300, 300)
+    WIN = GraphWin('Menu', 300, 300)
     string = menu(WIN)
 
     if string == 'play':
@@ -576,7 +596,7 @@ def main():
         board.userBoard = seq
 
         windowSize = board.size * board.cellSize + board.offset
-        WIN = GraphWin("Game", windowSize, windowSize)
+        WIN = GraphWin('Game', windowSize, windowSize)
         board.drawBoard(WIN)
 
         board.playMode(seq, WIN)
@@ -597,7 +617,7 @@ def main():
         print(seq)
         board = Board(seq, 100, 10, 500)
         windowSize = board.size * board.cellSize + board.offset
-        WIN = GraphWin("Game", windowSize, windowSize)
+        WIN = GraphWin('Game', windowSize, windowSize)
         board.size = 100
         board.solutionBoard = seq
         board.cellSize = 10
