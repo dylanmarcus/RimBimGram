@@ -99,8 +99,11 @@ class Board:
     def click(self, WIN):
         playing = True
         click = WIN.getMouse()
-        if WIN.checkKey() == 'x':
+        side = WIN.getSide()
+        #if WIN.checkKey() == 'x':
+        if side == 3:
             crossOut = True
+            print('x')
         else:
             crossOut = False
         for row in range(self.size):
@@ -109,19 +112,19 @@ class Board:
                 index = self.getIndex(click)
 
                 if click.x > p1.x and click.x < p2.x and click.y > p1.y and click.y < p2.y:
-                    if self.cells[row][column].state == 'blank':
-                        if crossOut:
+                    if crossOut:
+                        if self.cells[row][column].state == 'blank':
                             self.cells[row][column].state = 'crossedOut'
-                        else:
+                        elif self.cells[row][column].state == 'crossedOut':
+                            self.cells[row][column].state = 'blank'
+                    else:
+                        if self.cells[row][column].state == 'blank':
                             self.cells[row][column].state = 'filled'
                             self.userBoard[row][column] = 1
+                        elif self.cells[row][column].state == 'filled':
+                            self.cells[row][column].state = 'blank'
+                            self.userBoard[row][column] = 0
 
-                    elif self.cells[row][column].state == 'filled':
-                        self.cells[row][column].state = 'blank'
-                        self.userBoard[row][column] = 0
-
-                    elif self.cells[row][column].state == 'crossedOut':
-                        self.cells[row][column].state = 'blank'
 
                     self.cells[row][column].drawCell(p1, p2, WIN)
 
@@ -354,8 +357,8 @@ def menu(WIN):
     uploadImage.draw(WIN)
     uploadImageText.draw(WIN)
 
-    string = ''
-    while string == '':
+    value = ''
+    while value == '':
         click = WIN.getMouse()
 
         if buttonX < click.x < buttonX + width:
@@ -376,14 +379,13 @@ def menu(WIN):
                 value = 'image'
                 WIN.close()
 
-
-        createBoard.undraw()
-        createBoardText.undraw()
-        playBoard.undraw()
-        playBoardText.undraw()
-        uploadImage.undraw()
-        uploadImageText.undraw()
-        return value
+    createBoard.undraw()
+    createBoardText.undraw()
+    playBoard.undraw()
+    playBoardText.undraw()
+    uploadImage.undraw()
+    uploadImageText.undraw()
+    return value
 
 def selectBoard(WIN):
     home = Rectangle(Point(0, 0), Point(40, 20))
